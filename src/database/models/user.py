@@ -12,4 +12,4 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     password = Column(String)
-    role = Column(String)
+    role = Column(String, default="user")

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AuthBase(BaseModel):
@@ -17,6 +17,14 @@ class AuthDTO(AuthBase):
 class LoginPayload(BaseModel):
     username: str
     password: str
+
+
+class RegisterPayload(BaseModel):
+    email: str
+    username: str
+    first_name: str
+    last_name: str
+    password: str = Field(min_length=8)
 
 
 class AuthResponse(AuthBase):
