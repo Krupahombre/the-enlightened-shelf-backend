@@ -38,7 +38,7 @@ def login_user(db: Session, payload: LoginPayload) -> AuthDTO:
         raise
 
 
-def register_user(db: Session, payload: RegisterPayload) -> None:
+def register_user(db: Session, payload: RegisterPayload) -> AuthDTO:
     try:
         validation = validate_user(db, payload)
 
@@ -48,7 +48,18 @@ def register_user(db: Session, payload: RegisterPayload) -> None:
                 detail="User with provided data already exists!"
             )
 
-        create_user(db, payload)
+        user = create_user(db, payload)
+
+        token = create_token(user.id, user.username, user.role)
+
+        auth_data = AuthDTO(
+            username=user.username,
+            role=user.role,
+            token=token
+        )
+
+        return auth_data
+
     except HTTPException as e:
         logger.error(str(e))
         raise

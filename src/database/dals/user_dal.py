@@ -20,4 +20,5 @@ def get_user_by_email(db: Session, user_email: str) -> Optional[User]:
 def save_user(db: Session, user_model: User) -> Optional[User]:
     db.add(user_model)
     db.commit()
-    return db.refresh(user_model)
+    db.refresh(user_model)
+    return user_model

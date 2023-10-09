@@ -11,11 +11,13 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=AuthResponse, status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=AuthResponse, status_code=status.HTTP_200_OK)
 def login(db: db_dependency, payload: LoginPayload):
     return AuthResponse(data=login_user(db, payload))
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(db: db_dependency, payload: RegisterPayload):
-    register_user(db, payload)
+    return AuthResponse(data=register_user(db, payload))
+
+
