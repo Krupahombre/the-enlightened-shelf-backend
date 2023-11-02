@@ -11,6 +11,6 @@ router = APIRouter(
 )
 
 
-@router.get("/users/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.get("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_user(db: db_dependency, user_id: int = Path(gt=0)):
     return UserResponse(data=get_user(db, user_id))

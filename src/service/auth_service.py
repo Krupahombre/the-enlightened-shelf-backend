@@ -61,7 +61,7 @@ def register_user(db: Session, payload: RegisterPayload) -> AuthDTO:
         return auth_data
 
     except HTTPException as e:
-        logger.error(str(e))
+        logger.error(e)
         raise
     except Exception as e:
         logger.error(e)
