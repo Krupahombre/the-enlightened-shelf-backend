@@ -66,3 +66,7 @@ def register_user(db: Session, payload: RegisterPayload) -> AuthDTO:
     except Exception as e:
         logger.error(e)
         raise
+
+
+def check_admin_role(token_payload: dict) -> bool:
+    return True if token_payload["role"] == "admin" else False

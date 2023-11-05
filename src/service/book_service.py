@@ -3,10 +3,12 @@ from typing import Optional, List
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 
 from src.database.dals.book_dal import get_books, save_book
 from src.database.models.book import Book
 from src.server.models.book import BookDTO, BookPayload
+from src.service.auth_service import check_admin_role
 
 logger = logging.getLogger("BookService")
 
@@ -24,7 +26,13 @@ def get_books_list(db: Session) -> Optional[List[BookDTO]]:
         raise
 
 
-def add_book(db: Session, payload: BookPayload) -> Optional[BookDTO]:
+def add_book(token: dict, db: Session, payload: BookPayload) -> Optional[BookDTO]:
+    if not check_admin_role(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not authorize to do this action!"
+        )
+
     try:
         book_model = Book()
 
