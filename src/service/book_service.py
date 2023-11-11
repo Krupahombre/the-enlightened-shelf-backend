@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
-from src.database.dals.book_dal import get_books, save_book
+from src.database.dals.book_dal import get_books, save_book, get_book
 from src.database.models.book import Book
 from src.server.models.book import BookDTO, BookPayload
 from src.service.auth_service import check_admin_role
@@ -26,6 +26,19 @@ def get_books_list(db: Session) -> Optional[List[BookDTO]]:
         logger.exception(e)
         raise
 
+
+def get_book_single(db: Session, book_id: int) -> Optional[BookDTO]:
+    logger.info("Fetch book request occurred")
+    try:
+        books = get_book(db, book_id)
+
+        return books
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
 
 def add_book(token: dict, db: Session, payload: BookPayload) -> Optional[BookDTO]:
     logger.info("Add book request occurred")
