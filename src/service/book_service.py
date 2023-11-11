@@ -14,6 +14,7 @@ logger = logging.getLogger("BookService")
 
 
 def get_books_list(db: Session) -> Optional[List[BookDTO]]:
+    logger.info("Fetch books request occurred")
     try:
         books = get_books(db)
 
@@ -27,6 +28,7 @@ def get_books_list(db: Session) -> Optional[List[BookDTO]]:
 
 
 def add_book(token: dict, db: Session, payload: BookPayload) -> Optional[BookDTO]:
+    logger.info("Add book request occurred")
     if not check_admin_role(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
