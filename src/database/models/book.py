@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from src.database.database import Base
 
@@ -14,3 +15,6 @@ class Book(Base):
     quantity_available = Column(Integer)
     category = Column(String)
     img = Column(String)
+
+    reviews = relationship('Review', back_populates='book')
+    checkouts = relationship('Checkout', back_populates='book')

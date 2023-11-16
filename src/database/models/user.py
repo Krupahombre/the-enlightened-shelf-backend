@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from src.database.database import Base
 
@@ -13,3 +14,6 @@ class User(Base):
     last_name = Column(String)
     password = Column(String)
     role = Column(String, default="user")
+
+    reviews = relationship('Review', back_populates='user')
+    checkouts = relationship('Checkout', back_populates='user')
