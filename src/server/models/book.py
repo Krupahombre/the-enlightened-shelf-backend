@@ -28,6 +28,11 @@ class BookPayload(BaseModel):
     img: str
 
 
+class BookUpdatePayload(BaseModel):
+    quantity: int
+    quantity_available: int
+
+
 class BookResponse(BookBase):
     data: Optional[List[BookDTO]]
 
