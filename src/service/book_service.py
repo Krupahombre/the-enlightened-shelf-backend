@@ -111,6 +111,11 @@ def delete_book(token: dict, db: Session, book_id: int) -> None:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Book with provided id not found."
             )
+        if db_book.checkouts:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="The book cannot be removed - copies are on loan."
+            )
         remove_book(db, db_book)
     except HTTPException as e:
         logger.exception(e)
