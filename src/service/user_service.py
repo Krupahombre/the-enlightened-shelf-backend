@@ -13,7 +13,7 @@ from src.utils.password_utils import verify_password, get_hashed_password
 logger = logging.getLogger("UserService")
 
 
-def authenticate_user(db: Session, payload: LoginPayload) -> Optional[UserDTO]:
+def login_authentication(db: Session, payload: LoginPayload) -> Optional[UserDTO]:
     try:
         username = payload.username
         password = payload.password

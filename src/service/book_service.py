@@ -30,9 +30,9 @@ def get_books_list(db: Session) -> Optional[List[BookDTO]]:
 def get_book_single(db: Session, book_id: int) -> Optional[BookDTO]:
     logger.info("Fetch book request occurred")
     try:
-        books = get_book(db, book_id)
+        book = get_book(db, book_id)
 
-        return books
+        return book
     except HTTPException as e:
         logger.exception(e)
         raise

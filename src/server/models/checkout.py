@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from fastapi import UploadFile
 from pydantic import BaseModel
-from starlette.responses import FileResponse
 
 
 class CheckoutBase(BaseModel):
@@ -13,8 +11,15 @@ class CheckoutBase(BaseModel):
 
 class CheckoutAdminDTO(CheckoutBase):
     id: int
-    # user_id: int
-    # book_id: int
+    user_full_name: Optional[str]
+    book_name: Optional[str]
+    checkout_date: datetime
+    return_date: datetime
+    qr_code_data: str
+
+
+class CheckoutAdminDTOImage(CheckoutBase):
+    id: int
     user_full_name: Optional[str]
     book_name: Optional[str]
     checkout_date: datetime
@@ -23,4 +28,8 @@ class CheckoutAdminDTO(CheckoutBase):
 
 
 class CheckoutAdminResponse(CheckoutBase):
+    data: Optional[List[CheckoutAdminDTO]]
+
+
+class CheckoutAdminResponseImage(CheckoutBase):
     data: Optional[List[CheckoutAdminDTO]]

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from src.server.models.auth import LoginPayload, AuthDTO, RegisterPayload
-from src.service.user_service import authenticate_user, validate_user, create_user
+from src.service.user_service import login_authentication, validate_user, create_user
 from src.utils.token_utils import create_token
 
 logger = logging.getLogger("AuthService")
@@ -13,7 +13,7 @@ logger = logging.getLogger("AuthService")
 
 def login_user(db: Session, payload: LoginPayload) -> AuthDTO:
     try:
-        user = authenticate_user(db, payload)
+        user = login_authentication(db, payload)
 
         if not user:
             raise HTTPException(
