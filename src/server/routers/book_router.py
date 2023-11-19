@@ -23,8 +23,8 @@ def create_book(token: token_dependency, db: db_dependency, payload: BookPayload
 
 
 @router.get("/book/{book_id}", response_model=BookSingleResponse, status_code=status.HTTP_200_OK)
-def get_book_by_id(db: db_dependency, book_id: int = Path()):
-    return BookSingleResponse(data=get_book_single(db, book_id))
+def get_book_by_id(token: token_dependency, db: db_dependency, book_id: int = Path()):
+    return BookSingleResponse(data=get_book_single(token, db, book_id))
 
 
 @router.put("/book/{book_id}", status_code=status.HTTP_202_ACCEPTED)
