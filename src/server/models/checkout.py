@@ -9,13 +9,21 @@ class CheckoutBase(BaseModel):
         from_attributes = True
 
 
+class QRCodeDTO(BaseModel):
+    id: int
+    book_title: str
+    user_full_name: str
+    checkout_date: str
+    pickup_code: int
+
+
 class CheckoutAdminDTO(CheckoutBase):
     id: int
-    user_full_name: Optional[str]
+    user_email: Optional[str]
     book_name: Optional[str]
     checkout_date: datetime
     return_date: datetime
-    qr_code_data: str
+    qr_code_data: Optional[QRCodeDTO]
 
 
 class CheckoutAdminDTOImage(CheckoutBase):

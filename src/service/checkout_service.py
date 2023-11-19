@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -14,7 +14,7 @@ from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout
 from src.database.dals.user_dal import get_user_by_id
 from src.server.models.checkout import CheckoutAdminDTO, CheckoutAdminDTOImage
 from src.service.auth_service import check_admin_role
-from src.utils.qr_utils import create_qr_data
+from src.utils.qr_utils import create_qr_data, create_qr_code_dto
 
 logger = logging.getLogger("CheckoutService")
 
@@ -38,18 +38,17 @@ def get_checkouts_list_admin(token: dict, db: Session) -> Optional[List[Checkout
 
         checkout_list = []
         for checkout in checkouts:
-            user_first_name = checkout.user.first_name if checkout.user else None
-            user_last_name = checkout.user.last_name if checkout.user else None
-            user_full_name = user_first_name + " " + user_last_name
             book_name = checkout.book.title if checkout.book else None
+
+            qr_code = create_qr_code_dto(checkout.id, checkout.qr_code_data)
 
             checkout_dto = CheckoutAdminDTO(
                 id=checkout.id,
-                user_full_name=user_full_name,
+                user_email=checkout.user.email,
                 book_name=book_name,
                 checkout_date=checkout.checkout_date,
                 return_date=checkout.return_date,
-                qr_code_data=checkout.qr_code_data
+                qr_code_data=qr_code
             )
             checkout_list.append(checkout_dto)
 
