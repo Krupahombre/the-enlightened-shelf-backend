@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 from sqlalchemy.orm import relationship
 
 from src.database import Base
@@ -14,6 +14,7 @@ class Checkout(Base):
     book_id = Column(Integer, ForeignKey("Book.id"))
     checkout_date = Column(DateTime, default=datetime.datetime.now())
     return_date = Column(DateTime)
+    qr_code_data = Column(String)
 
     book = relationship('Book', back_populates='checkouts')
     user = relationship('User', back_populates='checkouts')

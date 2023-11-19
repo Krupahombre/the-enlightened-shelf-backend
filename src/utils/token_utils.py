@@ -36,13 +36,19 @@ def validate_token(token: str) -> Optional[Dict[str, str]]:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Couldn't validate user with provided token."
+            )
+        token_exp_date = datetime.utcfromtimestamp(payload["exp"])
+        if token_exp_date < datetime.now():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="Couldn't validate user with provided token."
             )
         return payload
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Couldn't validate user with provided token."
         )
 
