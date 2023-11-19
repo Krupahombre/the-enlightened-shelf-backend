@@ -8,9 +8,9 @@ from starlette import status
 
 from src.database import Checkout
 from src.database.dals.book_dal import get_book, update_book
-from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout
+from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, get_checkouts_by_user_id
 from src.database.dals.user_dal import get_user_by_id
-from src.server.models.checkout import CheckoutAdminDTO
+from src.server.models.checkout import CheckoutAdminDTO, CheckoutDTO
 from src.service.auth_service import check_admin_role
 from src.utils.qr_utils import create_qr_data, create_qr_code_dto
 
@@ -18,7 +18,7 @@ logger = logging.getLogger("CheckoutService")
 
 
 def get_checkouts_list_admin(token: dict, db: Session) -> Optional[List[CheckoutAdminDTO]]:
-    logger.info("Fetch checkouts request occurred")
+    logger.info("Fetch secured checkouts request occurred")
     if not check_admin_role(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -59,6 +59,44 @@ def get_checkouts_list_admin(token: dict, db: Session) -> Optional[List[Checkout
         raise
 
 
+def get_checkouts_list(token: dict, db: Session) -> Optional[List[CheckoutDTO]]:
+    logger.info("Fetch checkouts request occurred")
+    try:
+        user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
+
+        checkouts = get_checkouts_by_user_id(db, user.id)
+        if not checkouts:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="There are no checkouts to display"
+            )
+
+        checkout_list = []
+        for checkout in checkouts:
+            book_name = checkout.book.title if checkout.book else None
+
+            checkout_dto = CheckoutDTO(
+                id=checkout.id,
+                book_name=book_name,
+                checkout_date=checkout.checkout_date,
+                return_date=checkout.return_date
+            )
+            checkout_list.append(checkout_dto)
+
+        return checkout_list
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
 def create_checkout(token: dict, db: Session, book_id: int) -> None:
     logger.info("Create checkout occurred")
     try:
@@ -70,6 +108,11 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
                 detail="Book not found!"
             )
         user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
 
         user_checkouts = user.checkouts
 
