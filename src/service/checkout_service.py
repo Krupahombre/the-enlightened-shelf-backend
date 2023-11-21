@@ -120,7 +120,7 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
             if checkout.book_id == book_id:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="Cannot check out the same book twice!"
+                    detail="Cannot checkout the same book twice!"
                 )
 
         checkout_date = datetime.now()
