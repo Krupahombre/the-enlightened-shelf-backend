@@ -1,5 +1,6 @@
+import json
 import random
-from datetime import datetime
+import qrcode
 
 from src.database import User, Book
 from src.server.models.checkout import QRCodeDTO
@@ -30,3 +31,21 @@ def create_qr_code_dto(checkout_id: int, qr_code_data: str) -> QRCodeDTO:
         return qr_code_dto
     else:
         raise ValueError("Invalid QR code data format")
+
+
+def generate_qr_code(qr_data: QRCodeDTO):
+    json_data = json.dumps(qr_data.model_dump())
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
+    )
+
+    qr.add_data(json_data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    img.save("qrcode.png")
