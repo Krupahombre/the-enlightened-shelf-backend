@@ -160,3 +160,5 @@ cython_debug/
 yarn.lock
 node_modules
 package-lock.json
+/project_config_hidden.ini
+/qr_code_folder/

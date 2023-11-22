@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from src.database.dals.book_dal import get_books, save_book, get_book, remove_book, update_book
+from src.database.dals.user_dal import get_user_by_id
 from src.database.models.book import Book
 from src.server.models.book import BookDTO, BookPayload, BookUpdatePayload
 from src.service.auth_service import check_admin_role
@@ -27,9 +28,16 @@ def get_books_list(db: Session) -> Optional[List[BookDTO]]:
         raise
 
 
-def get_book_single(db: Session, book_id: int) -> Optional[BookDTO]:
+def get_book_single(token: dict, db: Session, book_id: int) -> Optional[BookDTO]:
     logger.info("Fetch book request occurred")
     try:
+        user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
+
         book = get_book(db, book_id)
 
         return book

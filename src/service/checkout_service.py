@@ -8,17 +8,18 @@ from starlette import status
 
 from src.database import Checkout
 from src.database.dals.book_dal import get_book, update_book
-from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout
+from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, get_checkouts_by_user_id
 from src.database.dals.user_dal import get_user_by_id
-from src.server.models.checkout import CheckoutAdminDTO
+from src.server.models.checkout import CheckoutAdminDTO, CheckoutDTO
 from src.service.auth_service import check_admin_role
+from src.utils.email_sender.sender import email_sender
 from src.utils.qr_utils import create_qr_data, create_qr_code_dto
 
 logger = logging.getLogger("CheckoutService")
 
 
 def get_checkouts_list_admin(token: dict, db: Session) -> Optional[List[CheckoutAdminDTO]]:
-    logger.info("Fetch checkouts request occurred")
+    logger.info("Fetch secured checkouts request occurred")
     if not check_admin_role(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -59,10 +60,47 @@ def get_checkouts_list_admin(token: dict, db: Session) -> Optional[List[Checkout
         raise
 
 
+def get_checkouts_list(token: dict, db: Session) -> Optional[List[CheckoutDTO]]:
+    logger.info("Fetch checkouts request occurred")
+    try:
+        user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
+
+        checkouts = get_checkouts_by_user_id(db, user.id)
+        if not checkouts:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="There are no checkouts to display"
+            )
+
+        checkout_list = []
+        for checkout in checkouts:
+            book_name = checkout.book.title if checkout.book else None
+
+            checkout_dto = CheckoutDTO(
+                id=checkout.id,
+                book_name=book_name,
+                checkout_date=checkout.checkout_date,
+                return_date=checkout.return_date
+            )
+            checkout_list.append(checkout_dto)
+
+        return checkout_list
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
 def create_checkout(token: dict, db: Session, book_id: int) -> None:
     logger.info("Create checkout occurred")
     try:
-        # TODO: book available decrease when checkout
         book = get_book(db, book_id)
         if not book:
             raise HTTPException(
@@ -70,6 +108,11 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
                 detail="Book not found!"
             )
         user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
 
         user_checkouts = user.checkouts
 
@@ -77,7 +120,7 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
             if checkout.book_id == book_id:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="Cannot check out the same book twice!"
+                    detail="Cannot checkout the same book twice!"
                 )
 
         checkout_date = datetime.now()
@@ -91,10 +134,13 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
         checkout_model.return_date = return_date.strftime("%Y-%m-%d %H:%M:%S")
         checkout_model.qr_code_data = create_qr_data(user, book, checkout_date.strftime("%Y-%m-%d %H:%M:%S"))
 
-        save_checkout(db, checkout_model)
+        db_checkout = save_checkout(db, checkout_model)
 
         book.quantity_available -= 1
         update_book(db, book)
+
+        qr_data = create_qr_code_dto(db_checkout.id, db_checkout.qr_code_data)
+        email_sender.send_email(user.email, qr_data)
     except HTTPException as e:
         logger.exception(e)
         raise

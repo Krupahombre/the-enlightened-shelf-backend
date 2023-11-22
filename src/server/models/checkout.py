@@ -17,6 +17,13 @@ class QRCodeDTO(BaseModel):
     pickup_code: int
 
 
+class CheckoutDTO(BaseModel):
+    id: int
+    book_name: str
+    checkout_date: datetime
+    return_date: datetime
+
+
 class CheckoutAdminDTO(CheckoutBase):
     id: int
     user_email: Optional[str]
@@ -28,3 +35,7 @@ class CheckoutAdminDTO(CheckoutBase):
 
 class CheckoutAdminResponse(CheckoutBase):
     data: Optional[List[CheckoutAdminDTO]]
+
+
+class CheckoutResponse(CheckoutBase):
+    data: Optional[List[CheckoutDTO]]
