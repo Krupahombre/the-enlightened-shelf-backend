@@ -12,6 +12,7 @@ from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, g
 from src.database.dals.user_dal import get_user_by_id
 from src.server.models.checkout import CheckoutAdminDTO, CheckoutDTO
 from src.service.auth_service import check_admin_role
+from src.utils.email_sender.sender import email_sender
 from src.utils.qr_utils import create_qr_data, create_qr_code_dto
 
 logger = logging.getLogger("CheckoutService")
@@ -100,7 +101,6 @@ def get_checkouts_list(token: dict, db: Session) -> Optional[List[CheckoutDTO]]:
 def create_checkout(token: dict, db: Session, book_id: int) -> None:
     logger.info("Create checkout occurred")
     try:
-        # TODO: book available decrease when checkout
         book = get_book(db, book_id)
         if not book:
             raise HTTPException(
@@ -134,10 +134,13 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
         checkout_model.return_date = return_date.strftime("%Y-%m-%d %H:%M:%S")
         checkout_model.qr_code_data = create_qr_data(user, book, checkout_date.strftime("%Y-%m-%d %H:%M:%S"))
 
-        save_checkout(db, checkout_model)
+        db_checkout = save_checkout(db, checkout_model)
 
         book.quantity_available -= 1
         update_book(db, book)
+
+        qr_data = create_qr_code_dto(db_checkout.id, db_checkout.qr_code_data)
+        email_sender.send_email(user.email, qr_data)
     except HTTPException as e:
         logger.exception(e)
         raise

@@ -64,7 +64,7 @@ class EmailSender:
 
             generate_qr_code(qr_data)
 
-            with open("qrcode.png", "rb") as attachment:
+            with open("./qr_code_folder/qrcode.png", "rb") as attachment:
                 part = MIMEApplication(attachment.read(), Name="qrcode.png")
                 part['Content-Disposition'] = f'attachment; filename="qrcode.png"'
                 message.attach(part)

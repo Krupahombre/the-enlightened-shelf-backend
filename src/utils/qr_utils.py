@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import qrcode
 
@@ -34,6 +35,9 @@ def create_qr_code_dto(checkout_id: int, qr_code_data: str) -> QRCodeDTO:
 
 
 def generate_qr_code(qr_data: QRCodeDTO):
+    if not os.path.exists("./qr_code_folder"):
+        os.makedirs("./qr_code_folder")
+
     json_data = json.dumps(qr_data.model_dump())
 
     qr = qrcode.QRCode(
@@ -48,4 +52,6 @@ def generate_qr_code(qr_data: QRCodeDTO):
 
     img = qr.make_image(fill_color="black", back_color="white")
 
-    img.save("qrcode.png")
+    file_path = os.path.join("./qr_code_folder", "qrcode.png")
+
+    img.save(file_path)
