@@ -55,6 +55,7 @@ class EmailSender:
             return html_str
 
     def send_email(self, email_to: str, qr_data: QRCodeDTO):
+        self.logger.info("Sending email ...")
         service = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, context=ssl.create_default_context())
         try:
             message = MIMEMultipart("alternative")

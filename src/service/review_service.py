@@ -61,6 +61,15 @@ def create_review_for_book(token: dict, db: Session, payload: ReviewPayload, boo
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Book not found!"
         )
+
+    user_reviews = user.reviews
+    for review in user_reviews:
+        if review.book_id == book_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Cannot add second review to the same book"
+            )
+
     try:
         review_model = Review()
 
