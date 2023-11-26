@@ -39,6 +39,11 @@ def get_book_single(token: dict, db: Session, book_id: int) -> Optional[BookDTO]
             )
 
         book = get_book(db, book_id)
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Book not found!"
+            )
 
         return book
     except HTTPException as e:

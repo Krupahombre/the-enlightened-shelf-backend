@@ -8,7 +8,8 @@ from starlette import status
 
 from src.database import Checkout
 from src.database.dals.book_dal import get_book, update_book
-from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, get_checkouts_by_user_id
+from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, get_checkouts_by_user_id, get_checkout, \
+    update_checkout, delete_checkout
 from src.database.dals.user_dal import get_user_by_id
 from src.server.models.checkout import CheckoutAdminDTO, CheckoutDTO
 from src.service.auth_service import check_admin_role
@@ -141,6 +142,65 @@ def create_checkout(token: dict, db: Session, book_id: int) -> None:
 
         qr_data = create_qr_code_dto(db_checkout.id, db_checkout.qr_code_data)
         email_sender.send_email(user.email, qr_data)
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
+def extend_loan(token: dict, db: Session, checkout_id: int) -> None:
+    logger.info("Extend loan request occurred")
+
+    user = get_user_by_id(db, token["id"])
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found!"
+        )
+
+    checkout = get_checkout(db, checkout_id, user.id)
+    if not checkout:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Checkout not found!"
+        )
+
+    try:
+        checkout.return_date += timedelta(days=7)
+        update_checkout(db, checkout)
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
+def return_book(token: dict, db: Session, checkout_id: int) -> None:
+    logger.info("Return book request occurred")
+
+    user = get_user_by_id(db, token["id"])
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found!"
+        )
+
+    checkout = get_checkout(db, checkout_id, user.id)
+    if not checkout:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Checkout not found!"
+        )
+
+    try:
+        checkout_book = checkout.book
+        checkout_book.quantity_available += 1
+        update_book(db, checkout_book)
+
+        delete_checkout(db, checkout)
     except HTTPException as e:
         logger.exception(e)
         raise
