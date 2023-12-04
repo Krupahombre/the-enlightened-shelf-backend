@@ -23,6 +23,11 @@ def get_user_checkout_list(token: token_dependency, db: db_dependency):
     return CheckoutResponse(data=get_checkouts_list(token, db))
 
 
+@router.get("/history", status_code=status.HTTP_200_OK)
+def get_user_checkout_history_list(token: token_dependency, db: db_dependency):
+    return
+
+
 @router.post("/book/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def create_new_checkout(token: token_dependency, db: db_dependency, book_id: int = Path()):
     create_checkout(token, db, book_id)
