@@ -3,8 +3,9 @@ from starlette import status
 
 from src.database.database import db_dependency
 from src.server.models.checkout import CheckoutAdminResponse, CheckoutResponse
+from src.server.models.checkout_history import CheckoutHistoryResponse
 from src.service.checkout_service import get_checkouts_list_admin, create_checkout, get_checkouts_list, extend_loan, \
-    return_book
+    return_book, get_checkouts_history_list
 from src.utils.token_utils import token_dependency
 
 router = APIRouter(
@@ -25,7 +26,7 @@ def get_user_checkout_list(token: token_dependency, db: db_dependency):
 
 @router.get("/history", status_code=status.HTTP_200_OK)
 def get_user_checkout_history_list(token: token_dependency, db: db_dependency):
-    return
+    return CheckoutHistoryResponse(data=get_checkouts_history_list(token, db))
 
 
 @router.post("/book/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
