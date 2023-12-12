@@ -10,8 +10,11 @@ from src.database import Checkout
 from src.database.dals.book_dal import get_book, update_book
 from src.database.dals.checkout_dal import get_checkouts_admin, save_checkout, get_checkouts_by_user_id, get_checkout, \
     update_checkout, delete_checkout
+from src.database.dals.checkout_history_dal import save_checkout_history, get_checkouts_history_by_user_id
 from src.database.dals.user_dal import get_user_by_id
+from src.database.models.checkout_history import CheckoutHistory
 from src.server.models.checkout import CheckoutAdminDTO, CheckoutDTO
+from src.server.models.checkout_history import CheckoutHistoryDTO
 from src.service.auth_service import check_admin_role
 from src.utils.email_sender.sender import email_sender
 from src.utils.qr_utils import create_qr_data, create_qr_code_dto
@@ -91,6 +94,45 @@ def get_checkouts_list(token: dict, db: Session) -> Optional[List[CheckoutDTO]]:
             checkout_list.append(checkout_dto)
 
         return checkout_list
+    except HTTPException as e:
+        logger.exception(e)
+        raise
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
+def get_checkouts_history_list(token: dict, db: Session) -> Optional[List[CheckoutHistoryDTO]]:
+    logger.info("Fetch checkouts history request occurred")
+    try:
+        user = get_user_by_id(db, token["id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!"
+            )
+
+        checkouts_history = get_checkouts_history_by_user_id(db, user.id)
+        if not checkouts_history:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="There are no checkouts to display"
+            )
+
+        checkout_history_list = []
+        for checkout in checkouts_history:
+            book_name = checkout.book.title if checkout.book else None
+
+            checkout_history_dto = CheckoutHistoryDTO(
+                id=checkout.id,
+                book_title=book_name,
+                book_id=checkout.book.id,
+                checkout_date=checkout.checkout_date,
+                return_date=checkout.return_date
+            )
+            checkout_history_list.append(checkout_history_dto)
+
+        return checkout_history_list
     except HTTPException as e:
         logger.exception(e)
         raise
@@ -199,6 +241,15 @@ def return_book(token: dict, db: Session, checkout_id: int) -> None:
         checkout_book = checkout.book
         checkout_book.quantity_available += 1
         update_book(db, checkout_book)
+
+        checkout_history_model = CheckoutHistory()
+
+        checkout_history_model.user_id = checkout.user_id
+        checkout_history_model.book_id = checkout.book_id
+        checkout_history_model.checkout_date = checkout.checkout_date
+        checkout_history_model.return_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        save_checkout_history(db, checkout_history_model)
 
         delete_checkout(db, checkout)
     except HTTPException as e:

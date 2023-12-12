@@ -9,7 +9,7 @@ class CheckoutBase(BaseModel):
         from_attributes = True
 
 
-class QRCodeDTO(BaseModel):
+class QRCodeDTO(CheckoutBase):
     id: int
     book_title: str
     user_full_name: str
@@ -17,7 +17,7 @@ class QRCodeDTO(BaseModel):
     pickup_code: int
 
 
-class CheckoutDTO(BaseModel):
+class CheckoutDTO(CheckoutBase):
     id: int
     book_name: str
     checkout_date: datetime

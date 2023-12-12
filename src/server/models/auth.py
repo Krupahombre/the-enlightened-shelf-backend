@@ -24,7 +24,7 @@ class RegisterPayload(BaseModel):
     username: str
     first_name: str
     last_name: str
-    password: str = Field(min_length=8)
+    password: str
 
 
 class AuthResponse(AuthBase):

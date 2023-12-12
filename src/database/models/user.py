@@ -17,3 +17,4 @@ class User(Base):
 
     reviews = relationship('Review', back_populates='user')
     checkouts = relationship('Checkout', back_populates='user')
+    checkouts_history = relationship('CheckoutHistory', back_populates='user')

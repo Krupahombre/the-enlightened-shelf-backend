@@ -16,5 +16,6 @@ class Book(Base):
     category = Column(String)
     img = Column(String)
 
-    reviews = relationship('Review', back_populates='book')
+    reviews = relationship('Review', back_populates='book', cascade="all, delete-orphan")
     checkouts = relationship('Checkout', back_populates='book')
+    checkouts_history = relationship('CheckoutHistory', back_populates='book')
